@@ -1,0 +1,73 @@
+name: Web build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Syntax-check modules
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          find src -name '*.js' -print0 | while IFS= read -r -d '' f; do
+            cp "$f" "$tmp/check.mjs"
+            node --check "$tmp/check.mjs" || { echo "::error file=$f::syntax error"; exit 1; }
+          done
+
+      - name: Check local imports resolve
+        run: |
+          set -euo pipefail
+          fail=0
+          while IFS= read -r -d '' f; do
+            dir="$(dirname "$f")"
+            for spec in $(grep -oE "from '\./[^']+'|from '\.\./[^']+'" "$f" | sed -E "s/from '([^']+)'/\1/"); do
+              if [ ! -f "$dir/$spec" ]; then
+                echo "::error file=$f::missing import $spec"
+                fail=1
+              fi
+            done
+          done < <(find src -name '*.js' -print0)
+          test -f vendor/three.module.js
+          exit $fail
+
+      - name: Assemble site
+        run: |
+          mkdir _site
+          cp -r index.html src vendor _site/
+          touch _site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

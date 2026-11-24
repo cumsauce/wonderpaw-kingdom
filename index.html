@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wonderpaw Kingdom</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+      canvas#view { display: block; width: 100vw; height: 100vh; image-rendering: pixelated; }
+      #overlay {
+        position: fixed; inset: 0; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 18px;
+        background: radial-gradient(ellipse at center, rgba(20,20,20,0.72), rgba(0,0,0,0.96));
+        color: #cfc8b8; font-family: Georgia, 'Times New Roman', serif; text-align: center;
+        cursor: pointer; user-select: none; z-index: 10;
+      }
+      #overlay h1 { font-size: 44px; letter-spacing: 6px; margin: 0; font-weight: normal; color: #d8cfae; }
+      #overlay p { margin: 0; font-size: 15px; letter-spacing: 1px; opacity: 0.8; }
+      #overlay .small { font-size: 12px; opacity: 0.5; }
+      #overlay.hidden { display: none; }
+      #hint {
+        position: fixed; left: 0; right: 0; bottom: 8vh; text-align: center;
+        color: #cfc8b8; font-family: Georgia, serif; font-size: 16px; letter-spacing: 2px;
+        opacity: 0; transition: opacity 2.5s; pointer-events: none; z-index: 5;
+        text-shadow: 0 0 6px #000;
+      }
+      #hint.show { opacity: 0.75; }
+    </style>
+  </head>
+  <body>
+    <canvas id="view"></canvas>
+    <div id="overlay">
+      <h1>WONDERPAW KINGDOM</h1>
+      <p>Click to enter</p>
+      <p class="small">WASD walk &nbsp;·&nbsp; mouse or arrow keys look &nbsp;·&nbsp; Shift hurry &nbsp;·&nbsp; F flashlight &nbsp;·&nbsp; Esc release</p>
+      <p class="small">Sound on. Please do not answer the animals.</p>
+    </div>
+    <div id="hint"></div>
+    <script type="importmap">
+      { "imports": { "three": "./vendor/three.module.js" } }
+    </script>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
